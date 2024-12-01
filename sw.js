@@ -1,12 +1,13 @@
-const CACHE_NAME = 'artbit-v2';
+const CACHE_NAME = 'artbit-v1';
+const BASE_PATH = '/artcanvas-clean';
 const ASSETS = [
-    './',
-    './index.html',
-    './css/style.css',
-    './js/app.js',
-    './manifest.json',
-    './icons/icon-192x192.png',
-    './icons/icon-512x512.png',
+    `${BASE_PATH}/`,
+    `${BASE_PATH}/index.html`,
+    `${BASE_PATH}/css/style.css`,
+    `${BASE_PATH}/js/app.js`,
+    `${BASE_PATH}/manifest.json`,
+    `${BASE_PATH}/icons/icon-192x192.png`,
+    `${BASE_PATH}/icons/icon-512x512.png`,
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'
 ];
 
@@ -50,27 +51,27 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 }
 
-                return fetch(event.request)
-                    .then((response) => {
-                        // 检查是否是有效的响应
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // 克隆响应，因为响应流只能使用一次
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-
+                return fetch(event.request).then((response) => {
+                    // 检查是否是有效的响应
+                    if (!response || response.status !== 200 || response.type !== 'basic') {
                         return response;
-                    });
+                    }
+
+                    // 克隆响应
+                    const responseToCache = response.clone();
+
+                    // 缓存响应
+                    caches.open(CACHE_NAME)
+                        .then((cache) => {
+                            cache.put(event.request, responseToCache);
+                        });
+
+                    return response;
+                });
             })
             .catch(() => {
                 // 如果都失败了，返回离线页面
-                return caches.match('./index.html');
+                return caches.match(`${BASE_PATH}/index.html`);
             })
     );
 });
