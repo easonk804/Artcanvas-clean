@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Artbit - 在线绘图</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="tool-group">
+                <button id="pencil" class="tool active" title="画笔">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button id="eraser" class="tool" title="橡皮擦">
+                    <i class="fas fa-eraser"></i>
+                </button>
+                <button id="rectangle" class="tool" title="矩形">
+                    <i class="far fa-square"></i>
+                </button>
+                <button id="circle" class="tool" title="圆形">
+                    <i class="far fa-circle"></i>
+                </button>
+            </div>
+            <div class="tool-group">
+                <input type="color" id="color-picker" value="#000000" title="颜色选择">
+                <input type="range" id="brush-size" min="1" max="50" value="5" title="画笔大小">
+            </div>
+            <div class="tool-group">
+                <button id="undo" class="action" title="撤销" disabled>
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button id="redo" class="action" title="重做" disabled>
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button id="clear" class="action" title="清空画布">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button id="save" class="action" title="保存">
+                    <i class="fas fa-save"></i>
+                </button>
+            </div>
+        </div>
+        <div class="canvas-container">
+            <canvas id="drawing-canvas"></canvas>
+        </div>
+    </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #2c3e50;
+    --background-color: #f5f6fa;
+    --toolbar-bg: #ffffff;
+    --border-color: #dcdde1;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--background-color);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.toolbar {
+    background-color: var(--toolbar-bg);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tool-group:last-child {
+    border-bottom: none;
+}
+
+.tool, .action {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool:hover, .action:hover {
+    background-color: var(--background-color);
+}
+
+.tool.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#color-picker {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#brush-size {
+    width: 40px;
+    cursor: pointer;
+}
+
+.canvas-container {
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#drawing-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .toolbar {
+        flex-direction: row;
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+
+    .tool-group {
+        flex-direction: row;
+        border-bottom: none;
+        border-right: 1px solid var(--border-color);
+        padding: 0 0.5rem;
+    }
+
+    .tool-group:last-child {
+        border-right: none;
+    }
+}
+
+/* 移动设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .tool, .action {
+        min-width: 48px;
+        min-height: 48px;
+        margin: 2px;
+    }
+
+    #color-picker {
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    #brush-size {
+        min-width: 48px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background: transparent;
+    }
+
+    #brush-size::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    #brush-size::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+    }
+
+    #brush-size::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        background: var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    #brush-size::-moz-range-track {
+        width: 100%;
+        height: 8px;
+        background: var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    /* 移除 IE 的默认样式 */
+    #brush-size::-ms-track {
+        width: 100%;
+        height: 8px;
+        background: transparent;
+        border-color: transparent;
+        color: transparent;
+        cursor: pointer;
+    }
+
+    #brush-size::-ms-thumb {
+        width: 24px;
+        height: 24px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+    }
+
+    #brush-size::-ms-fill-lower,
+    #brush-size::-ms-fill-upper {
+        background: var(--border-color);
+        border-radius: 4px;
+    }
+}
