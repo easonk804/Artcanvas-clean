@@ -1,4 +1,4 @@
-const CACHE_NAME = 'artbit-v1';
+const CACHE_NAME = 'Artbit-V1';
 const BASE_PATH = '/artcanvas-clean';
 const ASSETS = [
     `${BASE_PATH}/`,
