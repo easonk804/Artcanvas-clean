@@ -59,12 +59,12 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js', { scope: '/artcanvas-clean/' })
+                navigator.serviceWorker.register('./sw.js', { scope: '/artcanvas-clean/' })
                     .then(registration => {
                         console.log('ServiceWorker registration successful');
                     })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
                     });
             });
         }

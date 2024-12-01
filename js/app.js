@@ -78,9 +78,12 @@ class DrawingApp {
             e.preventDefault();
             const touch = e.touches[0];
             const rect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / rect.width;
+            const scaleY = this.canvas.height / rect.height;
+            
             this.isDrawing = true;
-            this.lastX = touch.clientX - rect.left;
-            this.lastY = touch.clientY - rect.top;
+            this.lastX = (touch.clientX - rect.left) * scaleX;
+            this.lastY = (touch.clientY - rect.top) * scaleY;
             this.saveState = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         }, { passive: false });
 
@@ -90,8 +93,10 @@ class DrawingApp {
             
             const touch = e.touches[0];
             const rect = this.canvas.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
+            const scaleX = this.canvas.width / rect.width;
+            const scaleY = this.canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
             
             this.ctx.beginPath();
             this.ctx.lineCap = 'round';
@@ -101,17 +106,20 @@ class DrawingApp {
                 this.ctx.globalCompositeOperation = 'source-over';
                 this.ctx.strokeStyle = this.color;
                 this.ctx.lineWidth = this.brushSize;
-                this.ctx.moveTo(this.lastX, this.lastY);
-                this.ctx.lineTo(x, y);
-                this.ctx.stroke();
             } else if (this.currentTool === 'eraser') {
                 this.ctx.globalCompositeOperation = 'destination-out';
                 this.ctx.lineWidth = this.brushSize;
-                this.ctx.moveTo(this.lastX, this.lastY);
-                this.ctx.lineTo(x, y);
-                this.ctx.stroke();
             }
 
+            // 使用二次贝塞尔曲线使线条更平滑
+            const midPoint = {
+                x: (this.lastX + x) / 2,
+                y: (this.lastY + y) / 2
+            };
+
+            this.ctx.quadraticCurveTo(this.lastX, this.lastY, midPoint.x, midPoint.y);
+            this.ctx.stroke();
+            
             this.lastX = x;
             this.lastY = y;
         }, { passive: false });
@@ -120,6 +128,7 @@ class DrawingApp {
             e.preventDefault();
             if (this.isDrawing) {
                 this.isDrawing = false;
+                this.ctx.closePath();
                 this.undoStack.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
                 this.redoStack = [];
                 this.updateUndoRedoButtons();
