@@ -105,18 +105,15 @@ class DrawingApp {
         // 触摸绘画事件
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-            const scaleY = this.canvas.height / rect.height;
+            const [x, y] = this.getTouchPos(e.touches[0]);
             
             this.isDrawing = true;
-            this.lastX = (touch.clientX - rect.left) * scaleX;
-            this.lastY = (touch.clientY - rect.top) * scaleY;
+            this.lastX = x;
+            this.lastY = y;
             
             // 开始新的路径
             this.ctx.beginPath();
-            this.ctx.moveTo(this.lastX, this.lastY);
+            this.ctx.moveTo(x, y);
             
             if (this.currentTool === 'pencil') {
                 this.ctx.globalCompositeOperation = 'source-over';
@@ -137,12 +134,7 @@ class DrawingApp {
             e.preventDefault();
             if (!this.isDrawing) return;
             
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-            const scaleY = this.canvas.height / rect.height;
-            const x = (touch.clientX - rect.left) * scaleX;
-            const y = (touch.clientY - rect.top) * scaleY;
+            const [x, y] = this.getTouchPos(e.touches[0]);
             
             // 直接画线到新位置
             this.ctx.lineTo(x, y);
@@ -279,18 +271,16 @@ class DrawingApp {
     }
 
     /**
-     * 获取触摸点在画布上的坐标和压力值
+     * 获取触摸点在画布上的坐标
      * @param {Touch} touch - 触摸事件对象
-     * @returns {Array} - [x, y, pressure] 坐标和压力值数组
+     * @returns {Array} - [x, y] 坐标数组
      */
     getTouchPos(touch) {
         const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
+        const dpr = window.devicePixelRatio || 1;
         return [
-            (touch.clientX - rect.left) * scaleX,
-            (touch.clientY - rect.top) * scaleY,
-            touch.force || 1.0  // 添加压力感应支持
+            (touch.clientX - rect.left) * dpr,
+            (touch.clientY - rect.top) * dpr
         ];
     }
 
