@@ -46,11 +46,12 @@ class DrawingApp {
             // 根据设备像素比缩放上下文
             this.ctx.scale(dpr, dpr);
             
-            // 设置默认样式
+            // 重新设置上下文的样式
             this.ctx.lineCap = 'round';
             this.ctx.lineJoin = 'round';
             this.ctx.strokeStyle = this.color;
             this.ctx.lineWidth = this.brushSize;
+            this.ctx.globalCompositeOperation = 'source-over';
         };
 
         // 初始调整大小
@@ -58,15 +59,18 @@ class DrawingApp {
         
         // 监听窗口大小变化
         window.addEventListener('resize', () => {
-            resizeCanvas();
-            // 保存当前内容
             const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            resizeCanvas();
             this.ctx.putImageData(imageData, 0, 0);
         });
         
         // 监听设备方向变化
         window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 100);
+            const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            setTimeout(() => {
+                resizeCanvas();
+                this.ctx.putImageData(imageData, 0, 0);
+            }, 100);
         });
     }
 
@@ -197,20 +201,21 @@ class DrawingApp {
 
         const [x, y] = this.getMousePos(e);
 
-        this.ctx.beginPath();
+        // 设置绘画样式
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
+        this.ctx.lineWidth = this.brushSize;
 
         if (this.currentTool === 'pencil') {
             this.ctx.globalCompositeOperation = 'source-over';
             this.ctx.strokeStyle = this.color;
-            this.ctx.lineWidth = this.brushSize;
+            this.ctx.beginPath();
             this.ctx.moveTo(this.lastX, this.lastY);
             this.ctx.lineTo(x, y);
             this.ctx.stroke();
         } else if (this.currentTool === 'eraser') {
             this.ctx.globalCompositeOperation = 'destination-out';
-            this.ctx.lineWidth = this.brushSize;
+            this.ctx.beginPath();
             this.ctx.moveTo(this.lastX, this.lastY);
             this.ctx.lineTo(x, y);
             this.ctx.stroke();
@@ -218,9 +223,9 @@ class DrawingApp {
             this.ctx.putImageData(this.saveState, 0, 0);
             this.ctx.globalCompositeOperation = 'source-over';
             this.ctx.strokeStyle = this.color;
-            this.ctx.lineWidth = this.brushSize;
             
             if (this.currentTool === 'rectangle') {
+                this.ctx.beginPath();
                 this.ctx.strokeRect(
                     this.lastX,
                     this.lastY,
