@@ -10,6 +10,7 @@ class DrawingApp {
     constructor() {
         this.canvas = document.getElementById('drawing-canvas');
         this.ctx = this.canvas.getContext('2d');
+        
         this.isDrawing = false;          // 是否正在绘制
         this.currentTool = 'pencil';     // 当前选中的工具
         this.brushSize = 5;              // 画笔大小
@@ -76,34 +77,54 @@ class DrawingApp {
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             const touch = e.touches[0];
-            const [x, y, pressure] = this.getTouchPos(touch);
+            const rect = this.canvas.getBoundingClientRect();
             this.isDrawing = true;
-            this.lastX = x;
-            this.lastY = y;
-            if (pressure !== 1.0) {
-                this.ctx.lineWidth = this.brushSize * pressure;
-            }
+            this.lastX = touch.clientX - rect.left;
+            this.lastY = touch.clientY - rect.top;
             this.saveState = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        });
+        }, { passive: false });
 
         this.canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (!this.isDrawing) return;
+            
             const touch = e.touches[0];
-            const [x, y, pressure] = this.getTouchPos(touch);
+            const rect = this.canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
             
-            if (pressure !== 1.0) {
-                this.ctx.lineWidth = this.brushSize * pressure;
+            this.ctx.beginPath();
+            this.ctx.lineCap = 'round';
+            this.ctx.lineJoin = 'round';
+
+            if (this.currentTool === 'pencil') {
+                this.ctx.globalCompositeOperation = 'source-over';
+                this.ctx.strokeStyle = this.color;
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+            } else if (this.currentTool === 'eraser') {
+                this.ctx.globalCompositeOperation = 'destination-out';
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
             }
-            
-            this.draw({ clientX: x, clientY: y });
-        });
+
+            this.lastX = x;
+            this.lastY = y;
+        }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
             e.preventDefault();
-            const mouseEvent = new MouseEvent('mouseup', {});
-            this.canvas.dispatchEvent(mouseEvent);
-        });
+            if (this.isDrawing) {
+                this.isDrawing = false;
+                this.undoStack.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
+                this.redoStack = [];
+                this.updateUndoRedoButtons();
+            }
+        }, { passive: false });
 
         // 撤销/重做事件
         document.getElementById('undo').addEventListener('click', this.undo.bind(this));
