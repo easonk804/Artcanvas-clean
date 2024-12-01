@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="canvas-container">
-            <canvas id="drawing-canvas"></canvas>
+            <canvas id="drawing-canvas" touch-action="none"></canvas>
         </div>
     </div>
     <script src="js/app.js"></script>
@@ -68,6 +68,27 @@
                     });
             });
         }
+    </script>
+    <script>
+        const canvas = document.getElementById('drawing-canvas');
+        // 阻止默认的触摸行为
+        document.body.addEventListener('touchstart', function(e) {
+            if (e.target == canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.body.addEventListener('touchend', function(e) {
+            if (e.target == canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target == canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
