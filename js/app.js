@@ -40,11 +40,11 @@ class DrawingApp {
             
             // 设置画布的实际大小（考虑设备像素比）
             const dpr = window.devicePixelRatio || 1;
-            this.canvas.width = rect.width * dpr;
-            this.canvas.height = rect.height * dpr;
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
             
             // 根据设备像素比缩放上下文
-            this.ctx.scale(dpr, dpr);
+            this.ctx.scale(1, 1);
             
             // 重新设置上下文的样式
             this.ctx.lineCap = 'round';
@@ -311,14 +311,18 @@ class DrawingApp {
      */
     getTouchPos(touch) {
         const rect = this.canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
+
+        // 获取页面滚动偏移
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+        // 计算实际触摸位置
+        const x = (touch.pageX - (rect.left + scrollX)) * scaleX;
+        const y = (touch.pageY - (rect.top + scrollY)) * scaleY;
         
-        return [
-            (touch.clientX - rect.left) * scaleX,
-            (touch.clientY - rect.top) * scaleY
-        ];
+        return [x, y];
     }
 
     /**
