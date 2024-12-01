@@ -61,7 +61,9 @@ class DrawingApp {
         window.addEventListener('resize', () => {
             const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             resizeCanvas();
-            this.ctx.putImageData(imageData, 0, 0);
+            requestAnimationFrame(() => {
+                this.ctx.putImageData(imageData, 0, 0);
+            });
         });
         
         // 监听设备方向变化
@@ -69,7 +71,9 @@ class DrawingApp {
             const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             setTimeout(() => {
                 resizeCanvas();
-                this.ctx.putImageData(imageData, 0, 0);
+                requestAnimationFrame(() => {
+                    this.ctx.putImageData(imageData, 0, 0);
+                });
             }, 100);
         });
     }
@@ -109,7 +113,8 @@ class DrawingApp {
         // 触摸绘画事件
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            const [x, y] = this.getTouchPos(e.touches[0]);
+            const touch = e.touches[0];
+            const [x, y] = this.getTouchPos(touch);
             
             this.isDrawing = true;
             this.lastX = x;
@@ -138,11 +143,35 @@ class DrawingApp {
             e.preventDefault();
             if (!this.isDrawing) return;
             
-            const [x, y] = this.getTouchPos(e.touches[0]);
+            const touch = e.touches[0];
+            const [x, y] = this.getTouchPos(touch);
             
-            // 直接画线到新位置
-            this.ctx.lineTo(x, y);
-            this.ctx.stroke();
+            if (this.currentTool === 'pencil' || this.currentTool === 'eraser') {
+                // 直接画线到新位置
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+            } else if (this.currentTool === 'rectangle' || this.currentTool === 'circle') {
+                // 恢复上一次的状态
+                this.ctx.putImageData(this.saveState, 0, 0);
+                
+                if (this.currentTool === 'rectangle') {
+                    this.ctx.strokeRect(
+                        this.lastX,
+                        this.lastY,
+                        x - this.lastX,
+                        y - this.lastY
+                    );
+                } else {
+                    const radiusX = Math.abs(x - this.lastX) / 2;
+                    const radiusY = Math.abs(y - this.lastY) / 2;
+                    const centerX = this.lastX + (x - this.lastX) / 2;
+                    const centerY = this.lastY + (y - this.lastY) / 2;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+                    this.ctx.stroke();
+                }
+            }
             
             // 更新最后的位置
             this.lastX = x;
@@ -283,9 +312,12 @@ class DrawingApp {
     getTouchPos(touch) {
         const rect = this.canvas.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        
         return [
-            (touch.clientX - rect.left) * dpr,
-            (touch.clientY - rect.top) * dpr
+            (touch.clientX - rect.left) * scaleX,
+            (touch.clientY - rect.top) * scaleY
         ];
     }
 
