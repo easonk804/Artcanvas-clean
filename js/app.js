@@ -32,13 +32,42 @@ class DrawingApp {
     initializeCanvas() {
         const resizeCanvas = () => {
             const container = this.canvas.parentElement;
-            this.canvas.width = container.clientWidth;
-            this.canvas.height = container.clientHeight;
-            this.saveState = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            const rect = container.getBoundingClientRect();
+            
+            // 设置画布的显示大小
+            this.canvas.style.width = `${rect.width}px`;
+            this.canvas.style.height = `${rect.height}px`;
+            
+            // 设置画布的实际大小（考虑设备像素比）
+            const dpr = window.devicePixelRatio || 1;
+            this.canvas.width = rect.width * dpr;
+            this.canvas.height = rect.height * dpr;
+            
+            // 根据设备像素比缩放上下文
+            this.ctx.scale(dpr, dpr);
+            
+            // 设置默认样式
+            this.ctx.lineCap = 'round';
+            this.ctx.lineJoin = 'round';
+            this.ctx.strokeStyle = this.color;
+            this.ctx.lineWidth = this.brushSize;
         };
 
+        // 初始调整大小
         resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        
+        // 监听窗口大小变化
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // 保存当前内容
+            const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.putImageData(imageData, 0, 0);
+        });
+        
+        // 监听设备方向变化
+        window.addEventListener('orientationchange', () => {
+            setTimeout(resizeCanvas, 100);
+        });
     }
 
     /**
@@ -84,6 +113,23 @@ class DrawingApp {
             this.isDrawing = true;
             this.lastX = (touch.clientX - rect.left) * scaleX;
             this.lastY = (touch.clientY - rect.top) * scaleY;
+            
+            // 开始新的路径
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.lastX, this.lastY);
+            
+            if (this.currentTool === 'pencil') {
+                this.ctx.globalCompositeOperation = 'source-over';
+                this.ctx.strokeStyle = this.color;
+                this.ctx.lineWidth = this.brushSize;
+            } else if (this.currentTool === 'eraser') {
+                this.ctx.globalCompositeOperation = 'destination-out';
+                this.ctx.lineWidth = this.brushSize;
+            }
+            
+            this.ctx.lineCap = 'round';
+            this.ctx.lineJoin = 'round';
+            
             this.saveState = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         }, { passive: false });
 
@@ -98,33 +144,27 @@ class DrawingApp {
             const x = (touch.clientX - rect.left) * scaleX;
             const y = (touch.clientY - rect.top) * scaleY;
             
-            this.ctx.beginPath();
-            this.ctx.lineCap = 'round';
-            this.ctx.lineJoin = 'round';
-
-            if (this.currentTool === 'pencil') {
-                this.ctx.globalCompositeOperation = 'source-over';
-                this.ctx.strokeStyle = this.color;
-                this.ctx.lineWidth = this.brushSize;
-            } else if (this.currentTool === 'eraser') {
-                this.ctx.globalCompositeOperation = 'destination-out';
-                this.ctx.lineWidth = this.brushSize;
-            }
-
-            // 使用二次贝塞尔曲线使线条更平滑
-            const midPoint = {
-                x: (this.lastX + x) / 2,
-                y: (this.lastY + y) / 2
-            };
-
-            this.ctx.quadraticCurveTo(this.lastX, this.lastY, midPoint.x, midPoint.y);
+            // 直接画线到新位置
+            this.ctx.lineTo(x, y);
             this.ctx.stroke();
             
+            // 更新最后的位置
             this.lastX = x;
             this.lastY = y;
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (this.isDrawing) {
+                this.isDrawing = false;
+                this.ctx.closePath();
+                this.undoStack.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
+                this.redoStack = [];
+                this.updateUndoRedoButtons();
+            }
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchcancel', (e) => {
             e.preventDefault();
             if (this.isDrawing) {
                 this.isDrawing = false;
