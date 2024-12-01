@@ -2,7 +2,8 @@
     "name": "Artbit - 在线绘图",
     "short_name": "Artbit",
     "description": "一个跨平台的在线绘图工具",
-    "start_url": "/",
+    "start_url": "https://easonk804.github.io/artcanvas-clean/",
+    "scope": "https://easonk804.github.io/artcanvas-clean/",
     "display": "standalone",
     "background_color": "#f5f6fa",
     "theme_color": "#4a90e2",
@@ -10,12 +11,14 @@
         {
             "src": "icons/icon-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "icons/icon-512x512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }
