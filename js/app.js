@@ -265,8 +265,8 @@ class DrawingApp {
      */
     getTouchPos(touch) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
+        const x = (touch.clientX - rect.left) * (this.canvas.width / rect.width); // 调整坐标
+        const y = (touch.clientY - rect.top) * (this.canvas.height / rect.height); // 调整坐标
         
         return [x, y];
     }
