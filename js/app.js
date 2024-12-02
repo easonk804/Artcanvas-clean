@@ -1,11 +1,9 @@
 /**
- * DrawingApp 类 - 在线绘图应用的核心类
- * 实现了画布初始化、工具切换、绘图功能和历史记录等功能
+ * DrawingApp 类 - 触摸绘图应用
  */
 class DrawingApp {
     /**
-     * 构造函数 - 初始化绘图应用
-     * 设置画布、上下文和默认绘图状态
+     * 初始化绘图应用
      */
     constructor() {
         this.canvas = document.getElementById('drawing-canvas');
@@ -103,12 +101,6 @@ class DrawingApp {
         brushSize.addEventListener('input', (e) => {
             this.brushSize = e.target.value;
         });
-
-        // 鼠标绘画事件
-        this.canvas.addEventListener('mousedown', this.startDrawing.bind(this));
-        this.canvas.addEventListener('mousemove', this.draw.bind(this));
-        this.canvas.addEventListener('mouseup', this.stopDrawing.bind(this));
-        this.canvas.addEventListener('mouseout', this.stopDrawing.bind(this));
 
         // 触摸绘画事件
         this.canvas.addEventListener('touchstart', (e) => {
@@ -212,115 +204,6 @@ class DrawingApp {
     }
 
     /**
-     * 开始绘制
-     * @param {MouseEvent} e - 鼠标事件对象
-     */
-    startDrawing(e) {
-        this.isDrawing = true;
-        [this.lastX, this.lastY] = this.getMousePos(e);
-        this.saveState = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-    }
-
-    /**
-     * 绘制过程
-     * @param {MouseEvent} e - 鼠标事件对象
-     */
-    draw(e) {
-        if (!this.isDrawing) return;
-
-        const [x, y] = this.getMousePos(e);
-
-        // 设置绘画样式
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
-        this.ctx.lineWidth = this.brushSize;
-
-        if (this.currentTool === 'pencil') {
-            this.ctx.globalCompositeOperation = 'source-over';
-            this.ctx.strokeStyle = this.color;
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.lastX, this.lastY);
-            this.ctx.lineTo(x, y);
-            this.ctx.stroke();
-        } else if (this.currentTool === 'eraser') {
-            this.ctx.globalCompositeOperation = 'destination-out';
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.lastX, this.lastY);
-            this.ctx.lineTo(x, y);
-            this.ctx.stroke();
-        } else if (this.currentTool === 'rectangle' || this.currentTool === 'circle') {
-            this.ctx.putImageData(this.saveState, 0, 0);
-            this.ctx.globalCompositeOperation = 'source-over';
-            this.ctx.strokeStyle = this.color;
-            
-            if (this.currentTool === 'rectangle') {
-                this.ctx.beginPath();
-                this.ctx.strokeRect(
-                    this.lastX,
-                    this.lastY,
-                    x - this.lastX,
-                    y - this.lastY
-                );
-            } else {
-                const radiusX = Math.abs(x - this.lastX) / 2;
-                const radiusY = Math.abs(y - this.lastY) / 2;
-                const centerX = this.lastX + (x - this.lastX) / 2;
-                const centerY = this.lastY + (y - this.lastY) / 2;
-                
-                this.ctx.beginPath();
-                this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
-                this.ctx.stroke();
-            }
-        }
-
-        [this.lastX, this.lastY] = [x, y];
-    }
-
-    /**
-     * 停止绘制
-     * 保存当前状态到撤销栈
-     */
-    stopDrawing() {
-        if (this.isDrawing) {
-            this.isDrawing = false;
-            this.undoStack.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
-            this.redoStack = [];
-            this.updateUndoRedoButtons();
-        }
-    }
-
-    /**
-     * 获取鼠标在画布上的坐标
-     * @param {MouseEvent} e - 鼠标事件对象
-     * @returns {Array} - [x, y] 坐标数组
-     */
-    getMousePos(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        return [
-            (e.clientX - rect.left) * scaleX,
-            (e.clientY - rect.top) * scaleY
-        ];
-    }
-
-    /**
-     * 获取触摸点在画布上的坐标
-     * @param {Touch} touch - 触摸事件对象
-     * @returns {Array} - [x, y] 坐标数组
-     */
-    getTouchPos(touch) {
-        const rect = this.canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        
-        // 使用clientX/Y代替pageX/Y，避免滚动偏移的问题
-        const x = (touch.clientX - rect.left);
-        const y = (touch.clientY - rect.top);
-        
-        return [x, y];
-    }
-
-    /**
      * 撤销上一步操作
      */
     undo() {
@@ -359,7 +242,6 @@ class DrawingApp {
 
     /**
      * 保存绘图
-     * 将画布内容保存为PNG图片
      */
     saveDrawing() {
         const link = document.createElement('a');
@@ -374,6 +256,19 @@ class DrawingApp {
     updateUndoRedoButtons() {
         document.getElementById('undo').disabled = this.undoStack.length === 0;
         document.getElementById('redo').disabled = this.redoStack.length === 0;
+    }
+
+    /**
+     * 获取触摸点在画布上的坐标
+     * @param {Touch} touch - 触摸事件对象
+     * @returns {Array} - [x, y] 坐标数组
+     */
+    getTouchPos(touch) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        return [x, y];
     }
 }
 
