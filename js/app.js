@@ -33,18 +33,18 @@ class DrawingApp {
         const resizeCanvas = () => {
             const container = this.canvas.parentElement;
             const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
             
             // 设置画布的显示大小
             this.canvas.style.width = `${rect.width}px`;
             this.canvas.style.height = `${rect.height}px`;
             
             // 设置画布的实际大小（考虑设备像素比）
-            const dpr = window.devicePixelRatio || 1;
-            this.canvas.width = rect.width;
-            this.canvas.height = rect.height;
+            this.canvas.width = rect.width * dpr;
+            this.canvas.height = rect.height * dpr;
             
             // 根据设备像素比缩放上下文
-            this.ctx.scale(1, 1);
+            this.ctx.scale(dpr, dpr);
             
             // 重新设置上下文的样式
             this.ctx.lineCap = 'round';
@@ -311,16 +311,11 @@ class DrawingApp {
      */
     getTouchPos(touch) {
         const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-
-        // 获取页面滚动偏移
-        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-
-        // 计算实际触摸位置
-        const x = (touch.pageX - (rect.left + scrollX)) * scaleX;
-        const y = (touch.pageY - (rect.top + scrollY)) * scaleY;
+        const dpr = window.devicePixelRatio || 1;
+        
+        // 使用clientX/Y代替pageX/Y，避免滚动偏移的问题
+        const x = (touch.clientX - rect.left);
+        const y = (touch.clientY - rect.top);
         
         return [x, y];
     }
